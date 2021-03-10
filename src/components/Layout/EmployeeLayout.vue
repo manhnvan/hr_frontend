@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import employAPI from "../../apis/employee.api";
+import employeeApi from "../../apis/employee.api";
 
 export default {
   data() {
@@ -69,24 +69,30 @@ export default {
     if (this.$store.getters.roleList.length === 0) {
       this.$store.dispatch("fetchRoleData");
     }
-    const {
-      id,
-      first_name,
-      last_name,
-      phone_number,
-      email,
-      role_id,
-      department_id,
-      hard_salary
-    } = this.$store.getters.userInformation;
-    this.id = id;
-    this.first_name = first_name;
-    this.last_name = last_name;
-    this.phone_number = phone_number;
-    this.email = email;
-    this.role_id = role_id;
-    this.department_id = department_id;
-    this.hard_salary = hard_salary;
+
+    const response = await employeeApi.getSingleEmployeeInformationByToken();
+    if (response.success === false) {
+      this.$router.push({ path: "/login" });
+    } else {
+      const {
+        id,
+        first_name,
+        last_name,
+        phone_number,
+        email,
+        role_id,
+        department_id,
+        hard_salary
+      } = response.user;
+      this.id = id;
+      this.first_name = first_name;
+      this.last_name = last_name;
+      this.phone_number = phone_number;
+      this.email = email;
+      this.role_id = role_id;
+      this.department_id = department_id;
+      this.hard_salary = hard_salary;
+    }
   },
   computed: {
     rolesSelectOptions: function() {
@@ -108,7 +114,7 @@ export default {
   },
   methods: {
     submitEditEmployeeInformationHandler: async function() {
-      const response = await employAPI.updateEmployeeInformation(this.id, {
+      const response = await employeeApi.updateEmployeeInformation(this.id, {
         first_name: this.first_name,
         last_name: this.last_name,
         phone_number: this.phone_number,

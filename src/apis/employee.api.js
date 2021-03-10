@@ -41,6 +41,14 @@ const EmployAPI = {
         } catch (error) {
             return error.response.data
         }
+    },
+    getSingleEmployeeInformationByToken: async () => {
+        try {
+            const response = await http.get("employees/singleEmployee")
+            return response.data
+        } catch (error) {
+            return error.response.data
+        }
     }
 }
 
