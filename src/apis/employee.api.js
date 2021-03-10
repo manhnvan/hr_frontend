@@ -34,9 +34,9 @@ const EmployAPI = {
             return error.response.data
         }
     },
-    login: async (email, password) => {
+    login: async (email, password, captcha) => {
         try {
-            const response = await http.post("employees/login", { email, password })
+            const response = await http.post("employees/login", { email, password, captcha })
             return response.data
         } catch (error) {
             return error.response.data

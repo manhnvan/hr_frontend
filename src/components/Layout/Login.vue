@@ -2,13 +2,20 @@
   <div class="login-container">
     <div class="login-form">
       <h1>Đăng nhập</h1>
+      <p>{{message}}</p>
       <form>
         <b-form-group label="Email:" label-for="input-2">
-          <b-form-input id="input-2" v-model="email" placeholder="Enter name" required></b-form-input>
+          <b-form-input id="input-2" v-model="email" placeholder="Nhập email" required></b-form-input>
         </b-form-group>
-        <b-form-group label="Password:" label-for="input-2">
-          <b-form-input v-model="password" placeholder="Enter name" type="password" required></b-form-input>
+        <b-form-group label="Password:">
+          <b-form-input v-model="password" placeholder="Nhập mật khẩu" type="password" required></b-form-input>
         </b-form-group>
+
+        <b-form-group v-if="loginFailedCount >= 5" label="Captcha">
+          <span>captcha {{serverCaptcha}}</span>
+          <b-form-input v-model="captcha" placeholder="Enter name" required></b-form-input>
+        </b-form-group>
+
         <b-button variant="success" @click="loginHandler">Đăng nhập</b-button>
       </form>
     </div>
@@ -22,21 +29,37 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
+      message: "",
+      serverCaptcha: null,
+      captcha: null,
+      loginFailedCount: 0
     };
   },
   methods: {
     loginHandler: async function() {
-      const response = await employeeApi.login(this.email, this.password);
-      console.log(response);
-      const { user, token } = response;
-      localStorage.setItem("token", token);
-      this.$store.dispatch("setUserInformation", user);
+      const response = await employeeApi.login(
+        this.email,
+        this.password,
+        this.captcha
+      );
+      console.log(response.success);
+      if (response.success) {
+        const { user, token } = response;
+        localStorage.setItem("token", token);
+        this.$store.dispatch("setUserInformation", user);
 
-      if (user.role_id === 7) {
-        this.$router.push({ path: "admin" });
+        if (user.role_id === 7) {
+          this.$router.push({ path: "admin" });
+        } else {
+          this.$router.push({ path: "employee" });
+        }
       } else {
-        this.$router.push({ path: "employee" });
+        const { message, login_failed_count, captcha } = response;
+        this.message = message;
+        this.loginFailedCount = login_failed_count;
+        this.serverCaptcha = captcha;
+        console.log(this.captcha);
       }
     }
   }
